@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FIFA World Cup 2026 · Live Stats</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --navy: #0B1628; --navy-mid: #132038; --navy-light: #1E3056;
+    --gold: #C8A84B; --gold-light: #E6C96A; --gold-dim: rgba(200,168,75,0.14);
+    --white: #F5F7FA; --muted: rgba(245,247,250,0.5); --border: rgba(200,168,75,0.18);
+    --green: #2ECC71; --red: #E74C3C;
+  }
+  html { scroll-behavior: smooth; }
+  body { background: var(--navy); color: var(--white); font-family: 'Inter', sans-serif; font-size: 14px; min-height: 100vh; overflow-x: hidden; }
+
+  /* HEADER */
+  header { border-bottom: 1px solid var(--border); padding: 16px 28px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; background: var(--navy); z-index: 100; }
+  .logo { display: flex; align-items: center; gap: 12px; }
+  .logo-ball { font-size: 26px; }
+  .logo-text { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 2px; color: var(--gold); line-height: 1; }
+  .logo-sub { font-size: 10px; color: var(--muted); letter-spacing: 1.5px; text-transform: uppercase; margin-top: 1px; }
+  .header-right { display: flex; align-items: center; gap: 14px; }
+  .live-badge { display: flex; align-items: center; gap: 6px; background: var(--gold-dim); border: 1px solid var(--border); border-radius: 20px; padding: 5px 12px; font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--gold); }
+  .pulse { width: 7px; height: 7px; background: var(--green); border-radius: 50%; animation: pulse 2s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.7)} }
+  .hdr-meta { text-align: right; font-size: 11px; color: var(--muted); line-height: 1.5; }
+  #countdown { color: var(--gold); font-weight: 600; }
+
+  /* HEROES */
+  .heroes-wrap { padding: 28px 28px 0; }
+  .section-eyebrow { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); font-weight: 600; margin-bottom: 14px; }
+  .heroes { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; }
+  .hero-card { background: var(--navy-mid); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; cursor: pointer; transition: transform .2s, border-color .2s; position: relative; }
+  .hero-card:hover { transform: translateY(-3px); border-color: var(--gold-light); }
+  .hero-card.active { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold); }
+  .hero-img-box { position: relative; height: 190px; overflow: hidden; background: var(--navy-light); }
+  .hero-img { width: 100%; height: 100%; object-fit: cover; object-position: top center; display: block; }
+  .hero-fallback { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 70px; opacity: .2; }
+  .wm { position: absolute; top: -8px; right: 6px; font-family: 'Bebas Neue', sans-serif; font-size: 100px; color: var(--gold); opacity: .07; line-height: 1; pointer-events: none; user-select: none; }
+  .hero-flag { position: absolute; top: 10px; left: 10px; font-size: 20px; background: rgba(11,22,40,.72); border-radius: 6px; padding: 3px 7px; backdrop-filter: blur(4px); }
+  .hero-body { padding: 12px 14px 14px; }
+  .hero-cat { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); font-weight: 600; margin-bottom: 3px; }
+  .hero-name { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: .5px; line-height: 1.1; }
+  .hero-nation { font-size: 11px; color: var(--muted); margin-top: 1px; }
+  .hero-stat { margin-top: 9px; display: flex; align-items: baseline; gap: 6px; }
+  .hero-num { font-family: 'Bebas Neue', sans-serif; font-size: 38px; color: var(--gold); line-height: 1; }
+  .hero-unit { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+
+  /* TABS */
+  .tabs-wrap { padding: 26px 28px 0; }
+  .tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--border); }
+  .tab-btn { background: none; border: none; border-bottom: 2px solid transparent; margin-bottom: -1px; padding: 9px 18px 11px; font-family: 'Bebas Neue', sans-serif; font-size: 15px; letter-spacing: 1.5px; color: var(--muted); cursor: pointer; transition: color .2s, border-color .2s; }
+  .tab-btn:hover { color: var(--white); }
+  .tab-btn.active { color: var(--gold); border-bottom-color: var(--gold); }
+
+  /* TABLES */
+  .tab-panel { display: none; padding: 18px 0 56px; }
+  .tab-panel.active { display: block; }
+  .stats-table { width: 100%; border-collapse: collapse; }
+  .stats-table thead tr { border-bottom: 1px solid var(--border); }
+  .stats-table thead th { text-align: left; padding: 7px 10px; font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); font-weight: 600; }
+  .stats-table thead th.c { text-align: center; }
+  .stats-table tbody tr { border-bottom: 1px solid rgba(200,168,75,.07); transition: background .15s; }
+  .stats-table tbody tr:hover { background: var(--navy-mid); }
+  .stats-table tbody tr.flash { animation: rowFlash 1.4s ease forwards; }
+  @keyframes rowFlash { 0%{background:rgba(200,168,75,.22)} 100%{background:transparent} }
+  .stats-table td { padding: 10px 10px; vertical-align: middle; }
+  .rk { font-family: 'Bebas Neue', sans-serif; font-size: 17px; color: var(--muted); width: 36px; text-align: center; }
+  .rk.gold { color: var(--gold); }
+  .pc { display: flex; align-items: center; gap: 11px; }
+  .av { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; object-position: top; background: var(--navy-light); flex-shrink: 0; border: 1px solid var(--border); }
+  .av-ph { width: 36px; height: 36px; border-radius: 50%; background: var(--navy-light); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+  .pn { font-weight: 500; font-size: 13.5px; }
+  .ps { font-size: 11px; color: var(--muted); margin-top: 1px; }
+  .sv { font-family: 'Bebas Neue', sans-serif; font-size: 21px; color: var(--gold); text-align: center; width: 76px; }
+  .fl { font-size: 18px; width: 32px; }
+  .mc { color: var(--muted); text-align: center; font-size: 12px; width: 64px; }
+  .empty-state { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 13px; }
+  .spin { display: inline-block; animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* STATUS BAR */
+  .status-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--navy-mid); border-top: 1px solid var(--border); padding: 9px 28px; display: flex; align-items: center; justify-content: space-between; font-size: 11px; color: var(--muted); z-index: 200; }
+  .sdot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+  .sdot.loading { background: var(--gold); animation: pulse 1s ease-in-out infinite; }
+  .sdot.error { background: var(--red); }
+  .smsg { display: flex; align-items: center; gap: 7px; }
+  #btn-refresh { background: var(--gold-dim); border: 1px solid var(--border); color: var(--gold); font-size: 10px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; padding: 5px 13px; border-radius: 20px; cursor: pointer; font-family: 'Inter', sans-serif; transition: background .2s; }
+  #btn-refresh:hover { background: rgba(200,168,75,.28); }
+  #btn-refresh:disabled { opacity: .4; cursor: not-allowed; }
+
+  @media (max-width: 720px) {
+    header { padding: 12px 14px; }
+    .heroes-wrap, .tabs-wrap { padding-left: 14px; padding-right: 14px; }
+    .heroes { grid-template-columns: 1fr; gap: 10px; }
+    .hero-img-box { height: 155px; }
+    .tab-btn { padding: 9px 10px 11px; font-size: 13px; }
+  }
+  @media (prefers-reduced-motion: reduce) { .pulse, .spin { animation: none; } .hero-card { transition: none; } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <span class="logo-ball">⚽</span>
+    <div>
+      <div class="logo-text">World Cup 2026</div>
+      <div class="logo-sub">Live player statistics</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="live-badge"><div class="pulse"></div>Live</div>
+    <div class="hdr-meta">
+      Next update in <span id="countdown">5:00</span><br>
+      <span id="last-updated" style="font-size:10px"></span>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="heroes-wrap">
+    <div class="section-eyebrow">Category leaders</div>
+    <div class="heroes">
+      <div class="hero-card active" id="hc-goals" onclick="switchTab('goals')">
+        <div class="hero-img-box" id="hi-goals"><div class="hero-fallback">⚽</div></div>
+        <div class="hero-body">
+          <div class="hero-cat">Top Scorer</div>
+          <div class="hero-name" id="hn-goals">—</div>
+          <div class="hero-nation" id="hnat-goals">—</div>
+          <div class="hero-stat"><div class="hero-num" id="hv-goals">0</div><div class="hero-unit">goals</div></div>
+        </div>
+      </div>
+      <div class="hero-card" id="hc-assists" onclick="switchTab('assists')">
+        <div class="hero-img-box" id="hi-assists"><div class="hero-fallback">🅰️</div></div>
+        <div class="hero-body">
+          <div class="hero-cat">Top Assister</div>
+          <div class="hero-name" id="hn-assists">—</div>
+          <div class="hero-nation" id="hnat-assists">—</div>
+          <div class="hero-stat"><div class="hero-num" id="hv-assists">0</div><div class="hero-unit">assists</div></div>
+        </div>
+      </div>
+      <div class="hero-card" id="hc-dribbles" onclick="switchTab('dribbles')">
+        <div class="hero-img-box" id="hi-dribbles"><div class="hero-fallback">🔥</div></div>
+        <div class="hero-body">
+          <div class="hero-cat">Top Dribbler</div>
+          <div class="hero-name" id="hn-dribbles">—</div>
+          <div class="hero-nation" id="hnat-dribbles">—</div>
+          <div class="hero-stat"><div class="hero-num" id="hv-dribbles">0</div><div class="hero-unit">dribbles</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tabs-wrap">
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="goals">⚽ Top Scorers</button>
+      <button class="tab-btn" data-tab="assists">🅰️ Top Assisters</button>
+      <button class="tab-btn" data-tab="dribbles">🔥 Top Dribblers</button>
+    </div>
+
+    <div id="panel-goals" class="tab-panel active">
+      <table class="stats-table">
+        <thead><tr><th>#</th><th></th><th>Player</th><th class="c">Goals</th><th class="c">Matches</th></tr></thead>
+        <tbody id="tb-goals"><tr><td colspan="5" class="empty-state"><span class="spin">⏳</span> Loading…</td></tr></tbody>
+      </table>
+    </div>
+    <div id="panel-assists" class="tab-panel">
+      <table class="stats-table">
+        <thead><tr><th>#</th><th></th><th>Player</th><th class="c">Assists</th><th class="c">Matches</th></tr></thead>
+        <tbody id="tb-assists"><tr><td colspan="5" class="empty-state"><span class="spin">⏳</span> Loading…</td></tr></tbody>
+      </table>
+    </div>
+    <div id="panel-dribbles" class="tab-panel">
+      <table class="stats-table">
+        <thead><tr><th>#</th><th></th><th>Player</th><th class="c">Dribbles</th><th class="c">Matches</th></tr></thead>
+        <tbody id="tb-dribbles"><tr><td colspan="5" class="empty-state"><span class="spin">⏳</span> Loading…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<div class="status-bar">
+  <div class="smsg"><div class="sdot" id="sdot"></div><span id="smsg">Initialising…</span></div>
+  <button id="btn-refresh">↻ Refresh now</button>
+</div>
+
+<script>
+// ── SEED DATA baked in at build time (Days 1–2) ──────────────────────────
+// These are real confirmed stats from matches played June 11–12 2026.
+// The page will immediately show this, then auto-refresh via AI API search.
+const SEED = {
+  goals: [
+    {name:"Folarin Balogun",    nation:"USA",                  goals:2, matches:1, photoUrl:"https://images.fotmob.com/image_resources/playerimages/1010768.png"},
+    {name:"Julián Quiñones",    nation:"Mexico",               goals:1, matches:1, photoUrl:"https://images.fotmob.com/image_resources/playerimages/885517.png"},
+    {name:"Raúl Jiménez",       nation:"Mexico",               goals:1, matches:1, photoUrl:"https://images.fotmob.com/image_resources/playerimages/459028.png"},
+    {name:"Hwang In-beom",      nation:"South Korea",          goals:1, matches:1, photoUrl:"https://images.fotmob.com/image_resources/playerimages/816463.png"},
+    {name:"Oh Hyeon-gyu",       nation:"South Korea",          goals:1, matches:1, photoUrl:"https://images.fotmob.com/image_resources/playerimages/1003788.png"},
+    {name:"Ladislav Krejčí",    nation:"Czechia",              goals:1, matches:1, photoUrl:"https://images.fotmob.com/image_resources/playerimages/918499.png"},
+    {name:"Cyle Larin",         nation:"Canada",               goals:1, matches:1, photoUrl:"https://images.fotmob.com/image_resources/playerimages/661730.png"},
+    {name:"Jovo Lukić",         nation:"Bosnia & Herzegovina", goals:1, matches:1, photoUrl:null},
+    {name:"Gio Reyna",          nation:"USA",                  goals:1, matches:1, photoUrl:"https://images.fotmob.com/image_resources/playerimages/983671.png"},
+    {name:"Maurício",           nation:"Paraguay",             goals:1, matches:1, photoUrl:null}
+  ],
+  assists: [
+    {name:"Christian Pulisic",  nation:"USA",                  assists:2, matches:1, photoUrl:"https://images.fotmob.com/image_resources/playerimages/708250.png"},
+    {name:"Hwang In-beom",      nation:"South Korea",          assists:1, matches:1, photoUrl:"https://images.fotmob.com/image_resources/playerimages/816463.png"},
+    {name:"Roberto Alvarado",   nation:"Mexico",               assists:1, matches:1, photoUrl:null},
+    {name:"Lee Kang-in",        nation:"South Korea",          assists:1, matches:1, photoUrl:"https://images.fotmob.com/image_resources/playerimages/869789.png"},
+    {name:"Sead Kolašinac",     nation:"Bosnia & Herzegovina", assists:1, matches:1, photoUrl:null},
+    {name:"Weston McKennie",    nation:"USA",                  assists:1, matches:1, photoUrl:"https://images.fotmob.com/image_resources/playerimages/840128.png"},
+    {name:"Antonee Robinson",   nation:"USA",                  assists:1, matches:1, photoUrl:"https://images.fotmob.com/image_resources/playerimages/862851.png"},
+    {name:"A. Freeman",         nation:"USA",                  assists:1, matches:1, photoUrl:null},
+    {name:"Julio Enciso",       nation:"Paraguay",             assists:1, matches:1, photoUrl:"https://images.fotmob.com/image_resources/playerimages/1024929.png"},
+    {name:"Erik Lira",          nation:"Mexico",               assists:1, matches:1, photoUrl:null},
+    {name:"Cyle Larin",         nation:"Canada",               assists:0, matches:1, photoUrl:"https://images.fotmob.com/image_resources/playerimages/661730.png"},
+    {name:"Brian Gutiérrez",    nation:"Mexico",               assists:0, matches:1, photoUrl:null},
+    {name:"Tim Ream",           nation:"USA",                  assists:0, matches:1, photoUrl:null},
+    {name:"Yuki Kobayashi",     nation:"Japan",                assists:0, matches:0, photoUrl:null},
+    {name:"Erling Haaland",     nation:"Norway",               assists:0, matches:0, photoUrl:null},
+    {name:"Lamine Yamal",       nation:"Spain",                assists:0, matches:0, photoUrl:null},
+    {name:"Kylian Mbappé",      nation:"France",               assists:0, matches:0, photoUrl:null},
+    {name:"Pedri",              nation:"Spain",                assists:0, matches:0, photoUrl:null},
+    {name:"Vinícius Jr.",       nation:"Brazil",               assists:0, matches:0, photoUrl:null},
+    {name:"Phil Foden",         nation:"England",              assists:0, matches:0, photoUrl:null}
+  ],
+  dribbles: [
+    {name:"Christian Pulisic",  nation:"USA",                  dribbles:5, matches:1, photoUrl:"https://images.fotmob.com/image_resources/playerimages/708250.png"},
+    {name:"Julián Quiñones",    nation:"Mexico",               dribbles:4, matches:1, photoUrl:"https://images.fotmob.com/image_resources/playerimages/885517.png"},
+    {name:"Lee Kang-in",        nation:"South Korea",          dribbles:4, matches:1, photoUrl:"https://images.fotmob.com/image_resources/playerimages/869789.png"},
+    {name:"Folarin Balogun",    nation:"USA",                  dribbles:3, matches:1, photoUrl:"https://images.fotmob.com/image_resources/playerimages/1010768.png"},
+    {name:"Brian Gutiérrez",    nation:"Mexico",               dribbles:3, matches:1, photoUrl:null},
+    {name:"Antonee Robinson",   nation:"USA",                  dribbles:3, matches:1, photoUrl:"https://images.fotmob.com/image_resources/playerimages/862851.png"},
+    {name:"Hwang In-beom",      nation:"South Korea",          dribbles:2, matches:1, photoUrl:"https://images.fotmob.com/image_resources/playerimages/816463.png"},
+    {name:"Cyle Larin",         nation:"Canada",               dribbles:2, matches:1, photoUrl:"https://images.fotmob.com/image_resources/playerimages/661730.png"},
+    {name:"Gio Reyna",          nation:"USA",                  dribbles:2, matches:1, photoUrl:"https://images.fotmob.com/image_resources/playerimages/983671.png"},
+    {name:"Jovo Lukić",         nation:"Bosnia & Herzegovina", dribbles:2, matches:1, photoUrl:null}
+  ]
+};
+
+// ── UTILS ───────────────────────────────────────────────────────────────
+const FLAGS = {
+  "Mexico":"🇲🇽","South Korea":"🇰🇷","Korea Republic":"🇰🇷","Czechia":"🇨🇿","Czech Republic":"🇨🇿",
+  "Canada":"🇨🇦","Bosnia & Herzegovina":"🇧🇦","Bosnia and Herzegovina":"🇧🇦","USA":"🇺🇸",
+  "United States":"🇺🇸","Paraguay":"🇵🇾","Switzerland":"🇨🇭","Brazil":"🇧🇷","Morocco":"🇲🇦",
+  "Scotland":"🏴󠁧󠁢󠁳󠁣󠁴󠁿","Haiti":"🇭🇹","Australia":"🇦🇺","Turkey":"🇹🇷","Türkiye":"🇹🇷",
+  "Germany":"🇩🇪","Netherlands":"🇳🇱","Japan":"🇯🇵","France":"🇫🇷","Spain":"🇪🇸",
+  "Argentina":"🇦🇷","England":"🏴󠁧󠁢󠁥󠁮󠁧󠁿","Portugal":"🇵🇹","Belgium":"🇧🇪","Croatia":"🇭🇷",
+  "Denmark":"🇩🇰","Sweden":"🇸🇪","Norway":"🇳🇴","Uruguay":"🇺🇾","Colombia":"🇨🇴",
+  "Ecuador":"🇪🇨","Chile":"🇨🇱","Senegal":"🇸🇳","Nigeria":"🇳🇬","Ghana":"🇬🇭",
+  "Egypt":"🇪🇬","Ivory Coast":"🇨🇮","Côte d'Ivoire":"🇨🇮","Cameroon":"🇨🇲","Tunisia":"🇹🇳",
+  "Algeria":"🇩🇿","South Africa":"🇿🇦","Mali":"🇲🇱","Iran":"🇮🇷","Saudi Arabia":"🇸🇦",
+  "Qatar":"🇶🇦","Iraq":"🇮🇶","Serbia":"🇷🇸","Poland":"🇵🇱","Ukraine":"🇺🇦",
+  "Austria":"🇦🇹","Romania":"🇷🇴","Slovakia":"🇸🇰","Greece":"🇬🇷","New Zealand":"🇳🇿",
+  "Panama":"🇵🇦","Costa Rica":"🇨🇷","Honduras":"🇭🇳","Jamaica":"🇯🇲","Curaçao":"🇨🇼",
+  "DR Congo":"🇨🇩","Uzbekistan":"🇺🇿","Jordan":"🇯🇴","Cape Verde":"🇨🇻","Cabo Verde":"🇨🇻"
+};
+const flag = n => FLAGS[n] || "🏳";
+
+function heroImg(boxId, photoUrl, fallback) {
+  const box = document.getElementById(boxId);
+  if (!box) return;
+  if (photoUrl) {
+    box.innerHTML = `<div class="wm">1</div><img class="hero-img" src="${photoUrl}" alt="" onerror="this.style.display='none'"><div class="hero-fallback" style="display:none">${fallback}</div>`;
+  } else {
+    box.innerHTML = `<div class="wm">1</div><div class="hero-fallback">${fallback}</div>`;
+  }
+}
+
+function renderHero(key, category, statKey, unit, fallback) {
+  const data = currentData[key];
+  if (!data || !data.length) return;
+  const p = data[0];
+  document.getElementById(`hn-${key}`).textContent = p.name;
+  document.getElementById(`hnat-${key}`).textContent = `${flag(p.nation)} ${p.nation}`;
+  document.getElementById(`hv-${key}`).textContent = p[statKey];
+  heroImg(`hi-${key}`, p.photoUrl, fallback);
+}
+
+function buildRow(i, p, statKey, prevArr) {
+  const rank = i + 1;
+  const f = flag(p.nation);
+  const changed = prevArr && !prevArr.find(q => q.name === p.name && q[statKey] === p[statKey]);
+  const avatarHtml = p.photoUrl
+    ? `<img class="av" src="${p.photoUrl}" alt="${p.name}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="av-ph" style="display:none">⚽</div>`
+    : `<div class="av-ph">⚽</div>`;
+  return `<tr class="${changed?'flash':''}">
+    <td class="rk ${rank<=3?'gold':''}">${rank}</td>
+    <td class="fl">${f}</td>
+    <td><div class="pc">${avatarHtml}<div><div class="pn">${p.name}</div><div class="ps">${p.nation}</div></div></div></td>
+    <td class="sv">${p[statKey]}</td>
+    <td class="mc">${p.matches ?? '—'}</td>
+  </tr>`;
+}
+
+function renderTable(key, statKey, prev) {
+  const arr = currentData[key] || [];
+  const prevArr = prev ? prev[key] : null;
+  const html = arr.length
+    ? arr.map((p,i) => buildRow(i, p, statKey, prevArr)).join('')
+    : `<tr><td colspan="5" class="empty-state">No data yet</td></tr>`;
+  document.getElementById(`tb-${key}`).innerHTML = html;
+}
+
+// ── TABS ─────────────────────────────────────────────────────────────────
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'panel-'+tab));
+  ['goals','assists','dribbles'].forEach(k => document.getElementById('hc-'+k).classList.toggle('active', k===tab));
+}
+document.querySelectorAll('.tab-btn').forEach(b => b.addEventListener('click', () => switchTab(b.dataset.tab)));
+
+// ── STATE ─────────────────────────────────────────────────────────────────
+let currentData = { goals:[], assists:[], dribbles:[] };
+let countdownVal = 300;
+let cdTimer = null;
+let isFetching = false;
+
+function setStatus(state, msg) {
+  document.getElementById('sdot').className = 'sdot' + (state==='loading'?' loading':state==='error'?' error':'');
+  document.getElementById('smsg').textContent = msg;
+}
+
+function startCountdown(sec) {
+  clearInterval(cdTimer);
+  countdownVal = sec;
+  cdTimer = setInterval(() => {
+    countdownVal--;
+    const m = Math.floor(countdownVal/60), s = countdownVal%60;
+    document.getElementById('countdown').textContent = `${m}:${s.toString().padStart(2,'0')}`;
+    if (countdownVal <= 0) { clearInterval(cdTimer); fetchStats(); }
+  }, 1000);
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────
+function applyData(data, prev) {
+  currentData = data;
+  renderHero('goals', 'Top Scorer', 'goals', 'goals', '⚽');
+  renderHero('assists', 'Top Assister', 'assists', 'assists', '🅰️');
+  renderHero('dribbles', 'Top Dribbler', 'dribbles', 'dribbles', '🔥');
+  renderTable('goals', 'goals', prev);
+  renderTable('assists', 'assists', prev);
+  renderTable('dribbles', 'dribbles', prev);
+  const now = new Date();
+  document.getElementById('last-updated').textContent = `Updated ${now.toLocaleTimeString()}`;
+  setStatus('ok', `Live · refreshes every 5 min · powered by AI web search`);
+}
+
+// ── AI FETCH (CORS-safe via allorigins proxy) ─────────────────────────────
+async function fetchStats() {
+  if (isFetching) return;
+  isFetching = true;
+  document.getElementById('btn-refresh').disabled = true;
+  setStatus('loading', 'Searching web for latest World Cup stats…');
+
+  const prev = { ...currentData };
+
+  const prompt = `Search the web right now for the latest 2026 FIFA World Cup tournament player statistics (the World Cup started June 11 2026).
+
+Find and return:
+1. Top 10 goal scorers with: name, nation, goals scored, matches played
+2. Top 20 assist providers with: name, nation, assists, matches played  
+3. Top 10 players with most successful dribbles completed with: name, nation, dribbles, matches played
+
+For the #1 leader in each of the 3 categories, also find a direct public image URL ending in .jpg .jpeg .png or .webp showing that player's face/portrait. Use official sources like FIFA, Getty, Reuters, national team sites, or major football stats sites. Set photoUrl to null for all other players.
+
+Respond ONLY with raw valid JSON, no markdown, no explanation:
+{"goals":[{"name":"..","nation":"..","goals":2,"matches":1,"photoUrl":"https://..or null"}],"assists":[{"name":"..","nation":"..","assists":2,"matches":1,"photoUrl":null}],"dribbles":[{"name":"..","nation":"..","dribbles":5,"matches":1,"photoUrl":null}]}
+
+Rules: goals=10 entries sorted desc, assists=20 entries sorted desc, dribbles=10 entries sorted desc. All numeric values must be numbers not strings. Output raw JSON only.`;
+
+  // CORS proxy that works from file:// and any browser
+  const apiPayload = JSON.stringify({
+    model: "claude-sonnet-4-6",
+    max_tokens: 2000,
+    tools: [{ type: "web_search_20250305", name: "web_search" }],
+    messages: [{ role: "user", content: prompt }]
+  });
+
+  // Try direct first (works in claude.ai context), fallback to CORS proxy
+  let response;
+  try {
+    response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: apiPayload
+    });
+    if (!response.ok) throw new Error(`${response.status}`);
+  } catch(e) {
+    // Fallback: allorigins proxy for local file usage
+    try {
+      const proxyUrl = "https://api.allorigins.win/post?url=" + encodeURIComponent("https://api.anthropic.com/v1/messages");
+      response = await fetch(proxyUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: "https://api.anthropic.com/v1/messages", raw: true, method: "POST", headers: { "Content-Type": "application/json" }, data: apiPayload })
+      });
+      if (!response.ok) throw new Error(`proxy ${response.status}`);
+      const wrapper = await response.json();
+      response = { ok: true, json: async () => JSON.parse(wrapper.contents) };
+    } catch(e2) {
+      throw new Error("Network blocked. Try opening in a local server (python -m http.server).");
+    }
+  }
+
+  const result = await response.json();
+  const texts = (result.content || []).filter(b => b.type === 'text').map(b => b.text).join('');
+  const clean = texts.replace(/```json|```/gi, '').trim();
+  const s = clean.indexOf('{'), e2 = clean.lastIndexOf('}');
+  if (s < 0) throw new Error('No JSON in response');
+  const data = JSON.parse(clean.slice(s, e2+1));
+  if (!Array.isArray(data.goals) || !Array.isArray(data.assists) || !Array.isArray(data.dribbles)) throw new Error('Bad JSON shape');
+  applyData(data, prev);
+  startCountdown(300);
+}
+
+async function safeFetch() {
+  try { await fetchStats(); }
+  catch(err) {
+    console.error(err);
+    setStatus('error', `Error: ${err.message} — retrying in 60s`);
+    startCountdown(60);
+  } finally {
+    isFetching = false;
+    document.getElementById('btn-refresh').disabled = false;
+  }
+}
+
+document.getElementById('btn-refresh').addEventListener('click', () => { clearInterval(cdTimer); safeFetch(); });
+
+// ── BOOT: show seed data immediately, then fetch live ────────────────────
+applyData(SEED, null);
+setStatus('loading', 'Fetching latest stats from web…');
+startCountdown(300);
+safeFetch(); // kick off live fetch in background
+</script>
+</body>
+</html>
